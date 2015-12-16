@@ -9,7 +9,7 @@
 		<link href="css/main.css" rel="stylesheet" />
 		<link id="theme" href="css/light.css" rel="stylesheet" />
 
-		<script src="../build/three.min.js"></script>
+		<script src="../build/three.js"></script>
 		<script src="../examples/js/libs/system.min.js"></script>
 
 		<script src="../examples/js/controls/EditorControls.js"></script>
@@ -149,6 +149,12 @@
 
 		<script src="js/EditorShortCuts.js"></script>
 		<script src="js/EditorShortCutsList.js"></script>
+		<script src="js/VideoTexture.js"></script>
+		
+
+<!-- 		<div id="preview3d"><img src="http://zaak.ch/plus/preloader/loader_white.gif" height="512px" width="auto" class="ri"></div> -->
+
+
 
 		<script>
 
@@ -214,13 +220,28 @@
 
 				var timeout;
 
-				function saveState( scene ) {
+				var sceneChanged = function(){
 
-					if ( editor.config.getKey( 'autosave' ) === false ) {
+					editor.signals.unsaveProject.dispatch();
 
-						return;
+					if ( editor.config.getKey( 'autosave' ) === false ) return;
 
-					}
+					// else {
+
+					// 	saveState(1000);
+
+					// }
+
+				};
+
+				var manualSave = function () {
+
+					saveState(1000);
+					// console.log("manualSave");
+				};
+
+				// var saveState = function ( scene ) {
+				var saveState = function ( time ) {
 
 					clearTimeout( timeout );
 
@@ -236,20 +257,21 @@
 
 						}, 100 );
 
-					}, 1000 );
+					}, time );
 
 				};
 
 				var signals = editor.signals;
 
-				signals.geometryChanged.add( saveState );
-				signals.objectAdded.add( saveState );
-				signals.objectChanged.add( saveState );
-				signals.objectRemoved.add( saveState );
-				signals.materialChanged.add( saveState );
-				signals.sceneGraphChanged.add( saveState );
+				signals.editorCleared.add( sceneChanged );
+				signals.geometryChanged.add( sceneChanged );
+				signals.objectAdded.add( sceneChanged );
+				signals.objectChanged.add( sceneChanged );
+				signals.objectRemoved.add( sceneChanged );
+				signals.materialChanged.add( sceneChanged );
+				signals.sceneGraphChanged.add( sceneChanged );
 				signals.scriptChanged.add( saveState );
-				signals.historyChanged.add( saveState );
+				signals.saveProject.add( manualSave );
 
 				signals.showModal.add( function ( content ) {
 
@@ -272,6 +294,8 @@
 
 				event.preventDefault();
 
+				console.log(event.dataTransfer.files[0]);
+
 				if ( event.dataTransfer.files.length > 0 ) {
 
 					editor.loader.loadFile( event.dataTransfer.files[ 0 ] );
@@ -284,8 +308,15 @@
 
 				switch ( event.keyCode ) {
 
+					case 79:
+						editor.camera.toOrthographic();
+
+						// editor.camera.toPerspective();
+						break;
+
 					case 8:
 						event.preventDefault(); // prevent browser back
+
 						break;
 
 					default:
@@ -341,5 +372,8 @@
 			*/
 
 		</script>
+
+<!-- 		<div id="library" style="position:absolute; left:30%; bottom:0; right:30%; height:20%"><iframe src="library.html"></div> -->
+
 	</body>
 </html>

@@ -116,6 +116,9 @@ EditorShortCuts.prototype = {
 		//Focus object
 		if( this.pressed(this.shortcuts.getKey( 'view/focus' ))) this.editor.focus(this.editor.selected);
 
+
+		if( this.pressed(this.shortcuts.getKey( 'camera/switch' ))) this.editor.signals.switchCameraMode.dispatch();
+
 		//Camera Positions - Hack Style
 		if( this.pressed(this.shortcuts.getKey( 'camera/top' ))) this.editor.signals.cameraPositionSnap.dispatch( 'top' );
 		if( this.pressed(this.shortcuts.getKey( 'camera/left' ))) this.editor.signals.cameraPositionSnap.dispatch( 'left' );

@@ -10,6 +10,8 @@ var Config = function () {
 		'autosave': true,
 		'theme': 'css/light.css',
 
+		'backgroundColor': 0xcccccc,
+
 		'project/history/stored': true,
 		'project/renderer': 'WebGLRenderer',
 		'project/renderer/antialias': true,

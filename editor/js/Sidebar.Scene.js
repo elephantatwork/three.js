@@ -31,6 +31,20 @@ Sidebar.Scene = function ( editor ) {
 	container.add( outliner );
 	container.add( new UI.Break() );
 
+	//bg
+	
+	var bgColorRow = new UI.Panel();
+	var bgColor = new UI.Color().setHexValue( editor.config.getKey('backgroundColor'));
+	bgColor.onChange( function () {
+		signals.bgColorChanged.dispatch( bgColor.getHexValue() );
+
+	} );
+
+	bgColorRow.add( new UI.Text( 'Background color' ).setWidth( '90px' ) );
+	bgColorRow.add( bgColor );
+
+	container.add( bgColorRow );
+
 	// fog
 
 	var updateFogParameters = function () {

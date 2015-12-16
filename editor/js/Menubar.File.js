@@ -60,6 +60,98 @@ Menubar.File = function ( editor ) {
 
 	options.add( new UI.HorizontalRule() );
 
+	// Export Editor
+
+	var option = new UI.Row();
+	option.setClass( 'option' );
+	option.setTextContent( 'Export Editor' );
+	option.onClick( function () {
+
+		var zip = new JSZip();
+
+		//
+
+		var output = editor.toJSON();
+		output.metadata.type = 'App';
+		delete output.history;
+
+		output = JSON.stringify( output, null, '\t' );
+		output = output.replace( /[\n\t]+([\d\.e\-\[\]]+)/g, '$1' );
+
+		saveString( output, 'zaak.json' );
+
+		// //
+
+		// var manager = new THREE.LoadingManager( function () {
+
+		// 	save( zip.generate( { type: 'blob' } ), 'download.zip' );
+
+		// } );
+
+		// var loader = new THREE.XHRLoader( manager );
+		// loader.load( 'js/libs/app/index.html', function ( content ) {
+
+		// 	zip.file( 'index.html', content );
+
+		// } );
+		// loader.load( 'js/libs/app.js', function ( content ) {
+
+		// 	zip.file( 'js/app.js', content );
+
+		// } );
+		// loader.load( '../build/three.min.js', function ( content ) {
+
+		// 	zip.file( 'js/three.min.js', content );
+
+		// } );
+
+	} );
+	options.add( option );
+
+
+	// Export Geometry
+
+	var option = new UI.Row();
+	option.setClass( 'option' );
+	option.setTextContent( 'Export Geometry' );
+	option.onClick( function () {
+
+		var object = editor.selected;
+
+		if ( object === null ) {
+
+			alert( 'No object selected.' );
+			return;
+
+		}
+
+		var geometry = object.geometry;
+
+		if ( geometry === undefined ) {
+
+			alert( 'The selected object doesn\'t have geometry.' );
+			return;
+
+		}
+
+		var output = geometry.toJSON();
+
+		try {
+
+			output = JSON.stringify( output, null, '\t' );
+			output = output.replace( /[\n\t]+([\d\.e\-\[\]]+)/g, '$1' );
+
+		} catch ( e ) {
+
+			output = JSON.stringify( output );
+
+		}
+
+		saveString( output, 'geometry.json' );
+
+	} );
+	options.add( option );
+
 	// Export Geometry
 
 	var option = new UI.Row();

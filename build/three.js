@@ -8223,6 +8223,7 @@ THREE.Layers.prototype = {
 
 		setFromCamera: function ( coords, camera ) {
 
+
 			if ( camera instanceof THREE.PerspectiveCamera ) {
 
 				this.ray.origin.setFromMatrixPosition( camera.matrixWorld );

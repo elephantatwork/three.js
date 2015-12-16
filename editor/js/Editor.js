@@ -6,7 +6,7 @@ var Editor = function () {
 
 	var SIGNALS = signals;
 
-	this.DEFAULT_CAMERA = new THREE.PerspectiveCamera( 50, 1, 1, 10000 );
+	this.DEFAULT_CAMERA = new THREE.PerspectiveCamera( 50, 1, 0.1, 10000 );
 	this.DEFAULT_CAMERA.name = 'Camera';
 	this.DEFAULT_CAMERA.position.set( 20, 10, 20 );
 	this.DEFAULT_CAMERA.lookAt( new THREE.Vector3() );
@@ -74,8 +74,12 @@ var Editor = function () {
 
 		cameraPositionSnap: new SIGNALS.Signal(),
 		undo: new SIGNALS.Signal(),
-		redo: new SIGNALS.Signal()
+		redo: new SIGNALS.Signal(),
+		switchCameraMode: new SIGNALS.Signal(),
+		unsaveProject: new SIGNALS.Signal(),
+		saveProject: new SIGNALS.Signal(),
 
+		bgColorChanged: new SIGNALS.Signal()
 
 	};
 
@@ -85,6 +89,10 @@ var Editor = function () {
 	this.loader = new Loader( this );
 
 	this.camera = this.DEFAULT_CAMERA.clone();
+	// this.camera = new THREE.CombinedCamera( window.innerWidth / 2, window.innerHeight / 2, 70, 1, 1000, - 500, 1000 );
+	// this.camera.name = 'ComboCamera';//'Camera';
+	// this.camera.position.set( 20, 10, 20 );
+	// this.camera.lookAt( new THREE.Vector3() );
 
 	this.scene = new THREE.Scene();
 	this.scene.name = 'Scene';
@@ -94,7 +102,7 @@ var Editor = function () {
 	this.object = {};
 	this.geometries = {};
 	this.materials = {};
-	this.textures = {};
+	// this.textures = {};
 	this.scripts = {};
 
 	this.selected = null;
@@ -102,6 +110,15 @@ var Editor = function () {
 
 	this.shortcuts = new EditorShortCutsList();
 	this.isolationMode = false;
+
+
+	var SCREEN_WIDTH = window.innerWidth;
+	var SCREEN_HEIGHT = window.innerHeight;
+
+
+	var activeCamera;
+	var cameraPerspective, cameraOrtho;
+	this.renderer = null;
 
 };
 
@@ -516,6 +533,8 @@ Editor.prototype = {
 
 	fromJSON: function ( json ) {
 
+		console.log(json);
+
 		var loader = new THREE.ObjectLoader();
 
 		// backwards
@@ -541,6 +560,8 @@ Editor.prototype = {
 		this.camera.copy( camera );
 		this.history.fromJSON( json.history );
 		this.scripts = json.scripts;
+
+		console.log(json.scene);
 
 		this.setScene( loader.parse( json.scene ) );
 
@@ -572,7 +593,10 @@ Editor.prototype = {
 			metadata: {},
 			project: {
 				shadows: this.config.getKey( 'project/renderer/shadows' ),
-				vr: this.config.getKey( 'project/vr' )
+				vr: this.config.getKey( 'project/vr' ),
+				backgroundColor: this.config.getKey('backgroundColor'),
+				fog: this.scene.fog,
+				fogColor: this.config.getKey('fogColor')
 			},
 			camera: this.camera.toJSON(),
 			scene: this.scene.toJSON(),

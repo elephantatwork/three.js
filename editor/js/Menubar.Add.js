@@ -49,6 +49,52 @@ Menubar.Add = function ( editor ) {
 
 	options.add( new UI.HorizontalRule() );
 
+	// Video Object
+
+	var option = new UI.Row();
+	option.setClass( 'option' );
+	option.setTextContent( 'VideoSphere' );
+	option.onClick( function () {
+
+			// find out which file formats i can read
+		var canPlayMp4	= document.createElement('video').canPlayType('video/mp4') !== '' ? true : false
+		var canPlayOgg	= document.createElement('video').canPlayType('video/ogg') !== '' ? true : false
+		if( canPlayMp4 ){
+			var url	= 'videos/sintel.mp4'
+		}else if( canPlayOgg ){
+			var url	= 'videos/sintel.ogv'
+		}else	alert('cant play mp4 or ogv')
+
+		// create the videoTexture
+		var videoTexture = new VideoTexture(url)
+		var video	= videoTexture.video
+		updateFcts.push(function(delta, now){
+			videoTexture.update(delta, now)
+		})
+		
+		// use the texture in a THREE.Mesh
+		var geometry	= new THREE.CubeGeometry(1,1,1);
+		var material	= new THREE.MeshBasicMaterial({
+			map	: videoTexture.texture
+		});
+		var mesh	= new THREE.Mesh( geometry, material );
+		scene.add( mesh );
+		updateFcts.push(function(delta, now){
+			mesh.rotation.x += 1 * delta;
+			mesh.rotation.y += 2 * delta;		
+		})
+
+
+		function onVideoPlayButtonClick(){
+			video.play()
+		}
+		function onVideoPauseButtonClick(){
+			video.pause()
+		}
+
+	} );
+	options.add( option );
+
 	// Plane
 
 	var option = new UI.Row();
@@ -125,7 +171,6 @@ Menubar.Add = function ( editor ) {
 	options.add( option );
 
 	// Sphere
-
 	var option = new UI.Row();
 	option.setClass( 'option' );
 	option.setTextContent( 'Sphere' );

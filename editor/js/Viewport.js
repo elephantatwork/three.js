@@ -25,6 +25,12 @@ var Viewport = function ( editor ) {
 	//
 
 	var camera = editor.camera;
+	var perspCam = true;	
+
+	//
+
+	var renderer = null;
+
 
 	//
 
@@ -71,6 +77,7 @@ var Viewport = function ( editor ) {
 		controls.enabled = false;
 
 	} );
+
 	transformControls.addEventListener( 'mouseUp', function () {
 
 		var object = transformControls.object;
@@ -137,6 +144,8 @@ var Viewport = function ( editor ) {
 	function getIntersects( point, objects ) {
 
 		mouse.set( ( point.x * 2 ) - 1, - ( point.y * 2 ) + 1 );
+
+		// var usedCam = (camera.inPerspectiveMode) ? camera.cameraP : camera.cameraO;
 
 		raycaster.setFromCamera( mouse, camera );
 
@@ -299,7 +308,30 @@ var Viewport = function ( editor ) {
 
 	} );
 
-	console.log(signals);
+	signals.switchCameraMode.add( function () {
+
+		var position = camera.position;
+
+		if (camera instanceof THREE.PerspectiveCamera) {
+            camera = new THREE.OrthographicCamera(window.innerWidth / -16, window.innerWidth / 16, window.innerHeight / 16, window.innerHeight / -16, -200, 10000);
+
+        } else {
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000);
+
+        }
+
+      	camera.position.x = position.x;
+        camera.position.y = position.y;
+        camera.position.z = position.z;
+
+       
+        controls.controler = camera; // update
+        transformControls.controler = camera; // update
+
+        editor.focus(editor.selected);
+		// render();
+
+	} );
 
 	signals.cameraPositionSnap.add( function ( mode ) {
 
@@ -395,14 +427,17 @@ var Viewport = function ( editor ) {
 		}
 
 		renderer = newRenderer;
+		editor.renderer = renderer;
 
 		renderer.autoClear = false;
-		renderer.autoUpdateScene = false;
+		renderer.autoUpdateScene = true;//false;
 		renderer.setClearColor( clearColor );
 		renderer.setPixelRatio( window.devicePixelRatio );
 		renderer.setSize( container.dom.offsetWidth, container.dom.offsetHeight );
 
 		container.dom.appendChild( renderer.domElement );
+
+
 
 		render();
 
@@ -526,6 +561,16 @@ var Viewport = function ( editor ) {
 
 	} );
 
+	//@elephantatwork, changeable bgColor
+	signals.bgColorChanged.add(function ( bgColor ) {
+
+		renderer.setClearColor( bgColor, 1 );
+		editor.config.setKey( 'backgroundColor', bgColor);
+
+		render();
+
+	} );
+
 	signals.fogTypeChanged.add( function ( fogType ) {
 
 		if ( fogType !== oldFogType ) {
@@ -576,10 +621,12 @@ var Viewport = function ( editor ) {
 
 	signals.windowResize.add( function () {
 
+
 		camera.aspect = container.dom.offsetWidth / container.dom.offsetHeight;
 		camera.updateProjectionMatrix();
 
 		renderer.setSize( container.dom.offsetWidth, container.dom.offsetHeight );
+		editor.rendererCSS.setSize( container.dom.offsetWidth, container.dom.offsetHeight );
 
 		render();
 
@@ -594,7 +641,7 @@ var Viewport = function ( editor ) {
 
 	//
 
-	var renderer = null;
+	// var renderer = null;
 
 	animate();
 
@@ -618,6 +665,8 @@ var Viewport = function ( editor ) {
 
 		requestAnimationFrame( animate );
 
+		// call each update function
+		
 		/*
 
 		// animations
@@ -644,12 +693,19 @@ var Viewport = function ( editor ) {
 
 		*/
 
+		// render();
+
 	}
+
 
 	function render() {
 
 		sceneHelpers.updateMatrixWorld();
 		scene.updateMatrixWorld();
+
+
+		console.log(editor.cssScene);
+
 
 		renderer.clear();
 		renderer.render( scene, camera );

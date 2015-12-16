@@ -77,6 +77,10 @@
 
 		setFromCamera: function ( coords, camera ) {
 
+			// if(camera.parent !== undefined)
+			// 	if(camera.parent instanceof THREE.CombinedCamera)
+			// 		camera.matrixWorld = camera.parent.matrixWorld;
+
 			if ( camera instanceof THREE.PerspectiveCamera ) {
 
 				this.ray.origin.setFromMatrixPosition( camera.matrixWorld );
